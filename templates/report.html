@@ -1,16 +1,10 @@
-{% extends "layout.html" %}
+<h1>Raporlama</h1>
+<form action="/check" method="post">
+  <label for="KaynakURL">URL Kontrol Et:</label>
+  <input type="url" id="KaynakURL" name="KaynakURL" required>
+  <button type="submit">Kontrol Et</button>
+</form>
 
-{% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Raporlar</h1>
-    {% if reports %}
-        <ul class="list-group">
-            {% for report in reports %}
-                <li class="list-group-item">{{ report }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Henüz bir rapor oluşturulmadı.</p>
-    {% endif %}
-</div>
-{% endblock %}
+<form action="/generate_report" method="post">
+  <button type="submit">Rapor Oluştur</button>
+</form>

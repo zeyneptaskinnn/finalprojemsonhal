@@ -1,79 +1,60 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 import os
-import xml.etree.ElementTree as ET
 import requests
-from datetime import datetime
+from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree, parse
+import xml.dom.minidom
 
-app = Flask(__name__, template_folder="src/templates")
+app = Flask(__name__)
 
-# XML dosyasını oluşturmak için kullanılacak temel fonksiyon
-def create_xml_file(data, filename="metadata.xml"):
-    root = ET.Element("WebResources")
-    for resource in data:
-        resource_element = ET.SubElement(root, "Resource")
-        for key, value in resource.items():
-            child = ET.SubElement(resource_element, key)
-            child.text = value
-    tree = ET.ElementTree(root)
-    tree.write(filename)
+@app.route('/')
+def home():
+    return render_template('form.html')
 
-# URL erişilebilirliğini kontrol eden fonksiyon
-def check_url_availability(url):
+@app.route('/save_metadata', methods=['POST'])
+def save_metadata():
+    # Formdan gelen verileri al
+    kaynak_id = request.form['kaynakID']
+    kaynak_adi = request.form['kaynakAdi']
+    kaynak_detay = request.form['kaynakDetay']
+    kaynak_url = request.form['kaynakURL']
+    kaynak_zaman = request.form['kaynakZamanDamgasi']
+
+    # XML dosyasını kontrol et ve oluştur ya da yükle
+    xml_file_path = 'reports/metadata.xml'
+    if not os.path.exists('reports'):
+        os.mkdir('reports')
+
+    if os.path.exists(xml_file_path):
+        tree = parse(xml_file_path)
+        root = tree.getroot()
+    else:
+        root = Element('WebKaynaklar')
+
+    # Yeni kayıt ekle
+    kaynak = SubElement(root, 'WebKaynak')
+    SubElement(kaynak, 'KaynakID').text = kaynak_id
+    SubElement(kaynak, 'KaynakAdi').text = kaynak_adi
+    SubElement(kaynak, 'KaynakDetay').text = kaynak_detay
+    SubElement(kaynak, 'KaynakURL').text = kaynak_url
+    SubElement(kaynak, 'KaynakZamanDamgasi').text = kaynak_zaman
+
+    # XML dosyasını kaydet
+    tree = ElementTree(root)
+    with open(xml_file_path, 'wb') as f:
+        tree.write(f, encoding='utf-8', xml_declaration=True)
+
+    # URL erişilebilirlik kontrolü ve TXT dosyasına kaydetme
+    txt_file_path = 'reports/url_status.txt'
     try:
-        response = requests.get(url, timeout=5)
-        return response.status_code == 200
+        response = requests.get(kaynak_url, timeout=5)
+        status = 'Erişilebilir' if response.status_code == 200 else 'Erişilemez'
     except requests.RequestException:
-        return False
+        status = 'Erişilemez'
 
-# Raporlama sonucu TXT dosyasına kaydedilir
-def save_report(report_data, filename="report.txt"):
-    with open(filename, "w") as file:
-        for line in report_data:
-            file.write(line + "\n")
+    with open(txt_file_path, 'a', encoding='utf-8') as f:
+        f.write(f"KaynakID: {kaynak_id}, URL: {kaynak_url}, Durum: {status}\n")
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        kaynak_id = request.form.get("kaynakID")
-        kaynak_adi = request.form.get("kaynakAdi")
-        kaynak_detay = request.form.get("kaynakDetay")
-        kaynak_url = request.form.get("kaynakURL")
-        zaman_damgasi = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return f"XML dosyasına kayıt eklendi ve URL durumu kaydedildi. XML dosyası: {xml_file_path}, TXT dosyası: {txt_file_path}"
 
-        metadata = [
-            {
-                "kaynakID": kaynak_id,
-                "kaynakAdi": kaynak_adi,
-                "kaynakDetay": kaynak_detay,
-                "KaynakURL": kaynak_url,
-                "kaynakZamanDamgasi": zaman_damgasi
-            }
-        ]
-
-        # XML dosyasını oluştur
-        create_xml_file(metadata)
-
-        # URL erişilebilirliğini kontrol et
-        is_accessible = check_url_availability(kaynak_url)
-        status = "Erişilebilir" if is_accessible else "Erişilemez"
-
-        # Raporu kaydet
-        report_line = f"{zaman_damgasi} | {kaynak_adi} ({kaynak_url}) - Durum: {status}"
-        save_report([report_line])
-
-        return redirect(url_for("report"))
-
-    return render_template("index.html")
-
-@app.route("/report")
-def report():
-    try:
-        with open("report.txt", "r") as file:
-            report_lines = file.readlines()
-    except FileNotFoundError:
-        report_lines = []
-
-    return render_template("report.html", reports=report_lines)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)

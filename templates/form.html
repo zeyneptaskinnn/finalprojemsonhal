@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Kaynağı Formu</title>
+</head>
+<body>
+    <h1>Web Kaynağı Bilgilerini Girin</h1>
+    <form action="/save_metadata" method="post">
+        <label for="kaynakID">Kaynak ID:</label><br>
+        <input type="text" id="kaynakID" name="kaynakID" required><br><br>
+
+        <label for="kaynakAdi">Kaynak Adı:</label><br>
+        <input type="text" id="kaynakAdi" name="kaynakAdi" required><br><br>
+
+        <label for="kaynakDetay">Kaynak Detay:</label><br>
+        <textarea id="kaynakDetay" name="kaynakDetay" required></textarea><br><br>
+
+        <label for="kaynakURL">Kaynak URL:</label><br>
+        <input type="url" id="kaynakURL" name="kaynakURL" required><br><br>
+
+        <label for="kaynakZamanDamgasi">Kaynak Zaman Damgası:</label><br>
+        <input type="datetime-local" id="kaynakZamanDamgasi" name="kaynakZamanDamgasi" required><br><br>
+
+        <button type="submit">Gönder</button>
+    </form>
+</body>
+</html>
