@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Web Kaynağı Üst Verilerini Ekle</h1>
+    <form method="POST" action="/">
+        <div class="mb-3">
+            <label for="kaynakID" class="form-label">Kaynak ID</label>
+            <input type="text" class="form-control" id="kaynakID" name="kaynakID" required>
+        </div>
+        <div class="mb-3">
+            <label for="kaynakAdi" class="form-label">Kaynak Adı</label>
+            <input type="text" class="form-control" id="kaynakAdi" name="kaynakAdi" required>
+        </div>
+        <div class="mb-3">
+            <label for="kaynakDetay" class="form-label">Kaynak Detay</label>
+            <textarea class="form-control" id="kaynakDetay" name="kaynakDetay" rows="3" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="kaynakURL" class="form-label">Kaynak URL</label>
+            <input type="url" class="form-control" id="kaynakURL" name="kaynakURL" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+    </form>
+</div>
+{% endblock %}
